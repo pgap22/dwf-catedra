@@ -1,4 +1,8 @@
 # application.yml
+app:
+  jwt-secret: 'SuperClaveSeguraDWFT01SuperClaveSeguraDWFT01SuperClaveSeguraDWFT01'
+  jwt-expiration-milliseconds: 3600000 # 1 hora
+
 spring:
   profiles:
     active: dev
