@@ -2,6 +2,7 @@ package com.udb.aerovia_api.service;
 
 import com.udb.aerovia_api.domain.Pago;
 import com.udb.aerovia_api.domain.Reserva;
+import com.udb.aerovia_api.domain.enums.EstadoReserva;
 import com.udb.aerovia_api.dto.CreatePagoDto;
 import com.udb.aerovia_api.dto.PagoDto;
 import com.udb.aerovia_api.exception.ResourceNotFoundException;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,13 +41,48 @@ public class PagoService {
         Reserva reserva = reservaRepository.findById(createDto.reservaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva", "id", createDto.reservaId()));
 
+        if (reserva.getEstado() == EstadoReserva.CANCELADA) {
+            throw new IllegalStateException("No es posible registrar pagos para una reserva cancelada.");
+        }
+        List<Pago> pagosPrevios = pagoRepository.findByReservaId(reserva.getId());
+        BigDecimal totalPrevio = pagosPrevios.stream()
+                .map(Pago::getMonto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalReserva = reserva.getTotal();
+
+        if (totalReserva != null && totalPrevio.compareTo(totalReserva) >= 0) {
+            if (reserva.getEstado() != EstadoReserva.COMPLETADA) {
+                reserva.setEstado(EstadoReserva.COMPLETADA);
+                reservaRepository.save(reserva);
+            }
+            throw new IllegalStateException("La reserva ya fue pagada totalmente.");
+        }
+
+        if (reserva.getEstado() == EstadoReserva.COMPLETADA) {
+            throw new IllegalStateException("La reserva ya fue pagada.");
+        }
+
+        BigDecimal totalTrasPago = totalPrevio.add(createDto.monto());
+
+        if (totalReserva != null && totalTrasPago.compareTo(totalReserva) > 0) {
+            BigDecimal restante = totalReserva.subtract(totalPrevio).max(BigDecimal.ZERO);
+            throw new IllegalArgumentException("El monto del pago excede el total de la reserva. Saldo pendiente: " + restante);
+        }
+
         Pago nuevoPago = new Pago();
         nuevoPago.setReserva(reserva);
         nuevoPago.setFechaPago(createDto.fechaPago());
         nuevoPago.setMetodoPago(createDto.metodoPago());
         nuevoPago.setMonto(createDto.monto());
 
-        return pagoMapper.toDto(pagoRepository.save(nuevoPago));
+        Pago pagoGuardado = pagoRepository.save(nuevoPago);
+
+        if (totalReserva == null || totalTrasPago.compareTo(totalReserva) >= 0) {
+            reserva.setEstado(EstadoReserva.COMPLETADA);
+            reservaRepository.save(reserva);
+        }
+
+        return pagoMapper.toDto(pagoGuardado);
     }
 
     @Transactional(readOnly = true)

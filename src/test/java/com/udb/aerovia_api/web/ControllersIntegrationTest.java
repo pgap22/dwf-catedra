@@ -356,7 +356,7 @@ class ControllersIntegrationTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void shouldListPasajeros() throws Exception {
-        PasajeroDto pasajero = new PasajeroDto(1L, "Laura Gomez", LocalDate.of(1995, 3, 15), "P12345");
+        PasajeroDto pasajero = new PasajeroDto(1L, "Laura Gomez", LocalDate.of(1995, 3, 15), "P12345", 1L);
         when(pasajeroService.obtenerTodos()).thenReturn(List.of(pasajero));
 
         mockMvc.perform(get("/api/v1/pasajeros"))
@@ -367,7 +367,7 @@ class ControllersIntegrationTest {
     @Test
     @WithMockUser
     void shouldListReclamosPorReserva() throws Exception {
-        PasajeroDto pasajero = new PasajeroDto(2L, "Luis Martinez", LocalDate.of(1990, 1, 10), "P54321");
+        PasajeroDto pasajero = new PasajeroDto(2L, "Luis Martinez", LocalDate.of(1990, 1, 10), "P54321", 1L);
         ReclamoDto reclamo = new ReclamoDto(1L, 11L, pasajero, "Demora en vuelo", EstadoReclamo.ABIERTO);
         when(reclamoService.obtenerReclamosPorReserva(11L)).thenReturn(List.of(reclamo));
 
@@ -472,7 +472,7 @@ class ControllersIntegrationTest {
         AvionDto avion = new AvionDto(1L, "YS-001", "ATR 42", 50);
         OperacionVueloDto operacion = new OperacionVueloDto(1L, vuelo, avion, LocalDateTime.now(), LocalDateTime.now().plusHours(1), EstadoOperacionVuelo.PROGRAMADO);
 
-        PasajeroDto pasajero = new PasajeroDto(1L, "Juan Perez", LocalDate.of(1990, 5, 20), "P9988");
+        PasajeroDto pasajero = new PasajeroDto(1L, "Juan Perez", LocalDate.of(1990, 5, 20), "P9988", 1L);
         AsientoAvionDto asiento = new AsientoAvionDto(1L, avion.id(), "1A", clase);
         TarifaDto tarifa = new TarifaDto(1L, "ECO", clase, true);
         ReservaAsientoDetalleDto asientoDetalle = new ReservaAsientoDetalleDto(1L, pasajero, asiento, tarifa, BigDecimal.valueOf(120.0));

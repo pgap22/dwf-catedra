@@ -72,6 +72,13 @@ public class ReclamoService {
     }
 
     @Transactional(readOnly = true)
+    public List<ReclamoDto> obtenerTodos() {
+        return reclamoRepository.findAll().stream()
+                .map(reclamoMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public ReclamoDto obtenerReclamoPorId(Long id) {
          return reclamoRepository.findById(id)
                 .map(reclamoMapper::toDto)

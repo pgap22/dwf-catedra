@@ -56,10 +56,10 @@ INSERT INTO operacion_tripulacion (operacion_id, tripulante_id, rol_en_vuelo) VA
   (1, 1, 'PILOTO'),
   (1, 2, 'TRIPULANTE CABINA');
 
-INSERT INTO pasajeros (nombre_completo, fecha_nacimiento, nro_pasaporte) VALUES
-  ('Juan Perez', '1990-05-20', 'P9988776'),
-  ('Maria Martinez', '1988-09-12', 'P8877665'),
-  ('Luis Gomez', '1995-01-30', 'P7766554');
+INSERT INTO pasajeros (nombre_completo, fecha_nacimiento, nro_pasaporte, usuario_id) VALUES
+  ('Juan Perez', '1990-05-20', 'P9988776', 3),
+  ('Maria Martinez', '1988-09-12', 'P8877665', 3),
+  ('Luis Gomez', '1995-01-30', 'P7766554', 3);
 
 INSERT INTO reservas (codigo_reserva, usuario_id, fecha_reserva, estado, total) VALUES
   ('ABC123', 3, '2025-10-20T14:20:00', 'ACTIVA', 640.00);
@@ -67,9 +67,6 @@ INSERT INTO reservas (codigo_reserva, usuario_id, fecha_reserva, estado, total) 
 INSERT INTO reserva_asiento (reserva_id, pasajero_id, operacion_id, asiento_avion_id, tarifa_oper_id, precio_pagado) VALUES
   (1, 1, 1, 1, 1, 320.00),
   (1, 2, 1, 2, 1, 320.00);
-
-INSERT INTO pagos (reserva_id, fecha_pago, metodo_pago, monto) VALUES
-  (1, '2025-10-20T14:25:00', 'TARJETA', 640.00);
 
 INSERT INTO reclamos (reserva_id, pasajero_id, descripcion, estado) VALUES
   (1, 2, 'Retraso en la entrega del equipaje.', 'EN_PROCESO');

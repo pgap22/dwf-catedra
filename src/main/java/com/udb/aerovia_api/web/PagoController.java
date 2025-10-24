@@ -50,7 +50,7 @@ public class PagoController {
             @ApiResponse(responseCode = "400", description = "Datos invalidos")
     })
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE', 'CLIENTE')")
     public ResponseEntity<PagoDto> registerPago(@Valid @RequestBody CreatePagoDto createDto) {
         return new ResponseEntity<>(pagoService.registrarPago(createDto), HttpStatus.CREATED);
     }

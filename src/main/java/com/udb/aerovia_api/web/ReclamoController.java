@@ -50,6 +50,17 @@ public class ReclamoController {
     }
 
     @Operation(
+            summary = "Listar todos los reclamos",
+            description = "Disponible solo para rol ADMIN. Devuelve todos los reclamos registrados."
+    )
+    @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReclamoDto>> getAllReclamos() {
+        return ResponseEntity.ok(reclamoService.obtenerTodos());
+    }
+
+    @Operation(
             summary = "Listar reclamos por reserva",
             description = "Devuelve los reclamos asociados a una reserva.",
             security = @SecurityRequirement(name = "bearerAuth")

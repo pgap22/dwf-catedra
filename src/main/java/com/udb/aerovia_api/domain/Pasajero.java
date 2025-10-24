@@ -1,14 +1,19 @@
 package com.udb.aerovia_api.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = "usuario")
+@ToString(exclude = "usuario")
 @Entity
 @Table(name = "pasajeros", uniqueConstraints = {
     @UniqueConstraint(columnNames = "nro_pasaporte")
@@ -28,4 +33,8 @@ public class Pasajero {
 
     @Column(name = "nro_pasaporte", length = 30)
     private String nroPasaporte;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false, foreignKey = @ForeignKey(name = "fk_pasajero_usuario"))
+    private Usuario usuario;
 }

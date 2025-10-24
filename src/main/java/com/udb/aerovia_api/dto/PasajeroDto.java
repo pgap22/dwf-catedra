@@ -6,5 +6,6 @@ public record PasajeroDto(
     Long id,
     String nombreCompleto,
     LocalDate fechaNacimiento,
-    String nroPasaporte
+    String nroPasaporte,
+    Long usuarioId
 ) {}

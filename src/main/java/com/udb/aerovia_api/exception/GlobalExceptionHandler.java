@@ -96,6 +96,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ErrorResponseDto> handleIllegalArgumentExceptions(
+            RuntimeException ex, HttpServletRequest request) {
+
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponseDto> handleMethodNotSupportedException(
             HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {

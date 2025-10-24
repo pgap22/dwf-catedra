@@ -6,9 +6,9 @@ public record ItemReservaDto(
     @NotNull(message = "El ID del pasajero es obligatorio.")
     Long pasajeroId,
 
-    @NotNull(message = "El ID del asiento del avión es obligatorio.")
+    // Opcional: si es nulo el sistema asignara un asiento disponible acorde a la tarifa
     Long asientoAvionId,
 
-    @NotNull(message = "El ID de la tarifa de operación (precio) es obligatorio.")
+    @NotNull(message = "El ID de la tarifa de operacion (precio) es obligatorio.")
     Long tarifaOperacionId
 ) {}

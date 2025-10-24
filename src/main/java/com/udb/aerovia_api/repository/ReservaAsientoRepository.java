@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ReservaAsientoRepository extends JpaRepository<ReservaAsiento, Long> {
     List<ReservaAsiento> findByReservaId(Long reservaId); // Para cargar los asientos de una reserva
 
+    List<ReservaAsiento> findByOperacionVueloId(Long operacionId);
+
     boolean existsByOperacionVueloIdAndAsientoAvionIdAndReservaIdNot(Long operacionId, Long asientoAvionId, Long reservaId);
 }

@@ -89,30 +89,43 @@ public class ReservaService {
 
         OperacionVuelo operacionVuelo = findOperacionVueloByIdOrThrow(dto.operacionVueloId());
 
-        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        boolean esAdminOAgente = authentication.getAuthorities()
+                .contains(new SimpleGrantedAuthority("ROLE_" + Rol.ADMIN.name())) ||
+                authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_" + Rol.AGENTE.name()));
+
         Usuario usuario = usuarioRepository.findByCorreo(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con correo: " + userEmail));
 
         BigDecimal totalReserva = BigDecimal.ZERO;
         List<ReservaAsiento> asientosReservados = new ArrayList<>();
         List<TarifaOperacion> tarifasOpsModificadas = new ArrayList<>();
+        List<AsientoAvion> asientosDelAvion = asientoAvionRepository.findByAvionId(operacionVuelo.getAvion().getId());
+        Set<Long> asientosOcupadosOperacion = reservaAsientoRepository.findByOperacionVueloId(operacionVuelo.getId()).stream()
+                .map(reservaAsiento -> reservaAsiento.getAsientoAvion().getId())
+                .collect(Collectors.toSet());
+        Set<Long> asientosAsignadosEnSolicitud = new HashSet<>();
 
         for (ItemReservaDto item : dto.items()) {
             Pasajero pasajero = findPasajeroByIdOrThrow(item.pasajeroId());
-            AsientoAvion asiento = findAsientoAvionByIdOrThrow(item.asientoAvionId());
-            TarifaOperacion tarifaOp = findTarifaOperacionByIdOrThrow(item.tarifaOperacionId());
-
-            if (!asiento.getAvion().getId().equals(operacionVuelo.getAvion().getId())) {
-                throw new IllegalArgumentException(
-                        "El asiento " + asiento.getCodigoAsiento() + " no pertenece al avion de esta operacion.");
+            if (!esAdminOAgente && (pasajero.getUsuario() == null ||
+                    !pasajero.getUsuario().getId().equals(usuario.getId()))) {
+                throw new IllegalArgumentException("El pasajero seleccionado no pertenece al usuario autenticado.");
             }
+
+            TarifaOperacion tarifaOp = findTarifaOperacionByIdOrThrow(item.tarifaOperacionId());
             if (!tarifaOp.getOperacionVuelo().getId().equals(operacionVuelo.getId())) {
                 throw new IllegalArgumentException("La tarifa seleccionada no pertenece a esta operacion de vuelo.");
             }
-            if (!asiento.getClase().getId().equals(tarifaOp.getTarifa().getClase().getId())) {
-                throw new IllegalArgumentException("La clase del asiento (" + asiento.getClase().getNombre()
-                        + ") no coincide con la clase de la tarifa (" + tarifaOp.getTarifa().getClase().getNombre()
-                        + ").");
+
+            AsientoAvion asiento;
+            if (item.asientoAvionId() != null) {
+                asiento = findAsientoAvionByIdOrThrow(item.asientoAvionId());
+                validarAsientoDisponible(operacionVuelo, tarifaOp, asiento, asientosOcupadosOperacion, asientosAsignadosEnSolicitud);
+            } else {
+                asiento = seleccionarAsientoDisponible(operacionVuelo, tarifaOp, asientosDelAvion,
+                        asientosOcupadosOperacion, asientosAsignadosEnSolicitud);
             }
 
             if (tarifaOp.getAsientosDisponibles() <= 0) {
@@ -121,6 +134,8 @@ public class ReservaService {
             }
             tarifaOp.setAsientosDisponibles(tarifaOp.getAsientosDisponibles() - 1);
             tarifasOpsModificadas.add(tarifaOp);
+            asientosAsignadosEnSolicitud.add(asiento.getId());
+            asientosOcupadosOperacion.add(asiento.getId());
 
             ReservaAsiento ra = new ReservaAsiento();
             ra.setPasajero(pasajero);
@@ -370,6 +385,37 @@ public class ReservaService {
                 baseDto.fechaReserva(), baseDto.estado(), baseDto.total(),
                 opDto,
                 asientos);
+    }
+
+    private void validarAsientoDisponible(OperacionVuelo operacionVuelo, TarifaOperacion tarifaOperacion,
+            AsientoAvion asiento, Set<Long> asientosOcupadosOperacion, Set<Long> asientosAsignadosEnSolicitud) {
+        if (!asiento.getAvion().getId().equals(operacionVuelo.getAvion().getId())) {
+            throw new IllegalArgumentException(
+                    "El asiento " + asiento.getCodigoAsiento() + " no pertenece al avion de esta operacion.");
+        }
+        if (!asiento.getClase().getId().equals(tarifaOperacion.getTarifa().getClase().getId())) {
+            throw new IllegalArgumentException("La clase del asiento (" + asiento.getClase().getNombre()
+                    + ") no coincide con la clase de la tarifa (" + tarifaOperacion.getTarifa().getClase().getNombre()
+                    + ").");
+        }
+        if (asientosOcupadosOperacion.contains(asiento.getId()) || asientosAsignadosEnSolicitud.contains(asiento.getId())) {
+            throw new IllegalStateException("El asiento " + asiento.getCodigoAsiento() + " ya se encuentra ocupado.");
+        }
+    }
+
+    private AsientoAvion seleccionarAsientoDisponible(OperacionVuelo operacionVuelo, TarifaOperacion tarifaOperacion,
+            List<AsientoAvion> asientosDelAvion, Set<Long> asientosOcupadosOperacion,
+            Set<Long> asientosAsignadosEnSolicitud) {
+        Long claseId = tarifaOperacion.getTarifa().getClase().getId();
+        for (AsientoAvion asiento : asientosDelAvion) {
+            if (asiento.getClase().getId().equals(claseId)
+                    && !asientosOcupadosOperacion.contains(asiento.getId())
+                    && !asientosAsignadosEnSolicitud.contains(asiento.getId())) {
+                return asiento;
+            }
+        }
+        throw new IllegalStateException("No hay asientos disponibles para la tarifa "
+                + tarifaOperacion.getTarifa().getCodigo() + " en este vuelo.");
     }
 
     private ReservaAdminDto mapToAdminDto(Reserva reserva) {

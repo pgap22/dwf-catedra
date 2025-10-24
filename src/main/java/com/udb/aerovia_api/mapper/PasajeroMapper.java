@@ -9,8 +9,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface PasajeroMapper {
 
+    @Mapping(target = "usuarioId", source = "usuario.id")
     PasajeroDto toDto(Pasajero pasajero);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "usuario", ignore = true)
     Pasajero toEntity(CreatePasajeroDto createDto);
 }

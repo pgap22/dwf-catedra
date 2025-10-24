@@ -24,9 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/pasajeros")
-@PreAuthorize("hasAnyRole('ADMIN', 'AGENTE')")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Pasajeros", description = "Gestion de datos de pasajeros (Rol requerido: ADMIN)")
+@Tag(name = "Pasajeros", description = "Gestion de datos de pasajeros")
 public class PasajeroController {
 
     private final PasajeroService pasajeroService;
@@ -44,6 +43,7 @@ public class PasajeroController {
             @ApiResponse(responseCode = "400", description = "Datos invalidos")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE', 'CLIENTE')")
     public ResponseEntity<PasajeroDto> createPasajero(@Valid @RequestBody CreatePasajeroDto createDto) {
         return new ResponseEntity<>(pasajeroService.crearPasajero(createDto), HttpStatus.CREATED);
     }
@@ -55,6 +55,7 @@ public class PasajeroController {
     )
     @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE', 'CLIENTE')")
     public ResponseEntity<List<PasajeroDto>> getAllPasajeros() {
         return ResponseEntity.ok(pasajeroService.obtenerTodos());
     }
@@ -69,6 +70,7 @@ public class PasajeroController {
             @ApiResponse(responseCode = "404", description = "Pasajero no existe")
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE', 'CLIENTE')")
     public ResponseEntity<PasajeroDto> getPasajeroById(@PathVariable Long id) {
         return ResponseEntity.ok(pasajeroService.obtenerPorId(id));
     }
@@ -82,6 +84,7 @@ public class PasajeroController {
             @ApiResponse(responseCode = "404", description = "Pasajero no existe")
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE', 'CLIENTE')")
     public ResponseEntity<PasajeroDto> updatePasajero(@PathVariable Long id, @Valid @RequestBody CreatePasajeroDto updateDto) {
         return ResponseEntity.ok(pasajeroService.actualizarPasajero(id, updateDto));
     }
@@ -95,7 +98,7 @@ public class PasajeroController {
             @ApiResponse(responseCode = "404", description = "Pasajero no existe")
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENTE', 'CLIENTE')")
     public ResponseEntity<Void> deletePasajero(@PathVariable Long id) {
         pasajeroService.eliminarPasajero(id);
         return ResponseEntity.noContent().build();
