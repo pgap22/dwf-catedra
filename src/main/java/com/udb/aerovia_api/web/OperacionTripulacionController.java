@@ -59,8 +59,13 @@ public class OperacionTripulacionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/operacion-vuelo/{operacionVueloId}")
-    public ResponseEntity<List<OperacionTripulacionDto>> listarTripulatesByOperacionId(@PathVariable Long operacionVueloId) {
-        return ResponseEntity.ok(service.listarTripulatesByOperacionId(operacionVueloId));
+    @Operation(summary = "Listar tripulacion asignada", description = "Devuelve todos los tripulantes asignados a una operacion de vuelo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Listado recuperado"),
+            @ApiResponse(responseCode = "404", description = "Operacion no existe")
+    })
+    @GetMapping("/operacion/{operacionId}")
+    public ResponseEntity<List<OperacionTripulacionDto>> getTripulacionPorOperacion(@PathVariable Long operacionId) {
+        return ResponseEntity.ok(service.obtenerTripulacionPorOperacion(operacionId));
     }
 }

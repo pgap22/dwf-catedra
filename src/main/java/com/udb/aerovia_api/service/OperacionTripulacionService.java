@@ -5,16 +5,14 @@ import com.udb.aerovia_api.domain.OperacionVuelo;
 import com.udb.aerovia_api.domain.Tripulante;
 import com.udb.aerovia_api.dto.AsignarTripulanteDto;
 import com.udb.aerovia_api.dto.OperacionTripulacionDto;
+import com.udb.aerovia_api.exception.DuplicateResourceException;
 import com.udb.aerovia_api.exception.ResourceNotFoundException;
-import com.udb.aerovia_api.mapper.OperacionTripulacionMapper;
 import com.udb.aerovia_api.mapper.TripulatesOperacionMapper;
 import com.udb.aerovia_api.repository.OperacionTripulacionRepository;
 import com.udb.aerovia_api.repository.OperacionVueloRepository;
 import com.udb.aerovia_api.repository.TripulanteRepository;
-
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,20 +22,17 @@ public class OperacionTripulacionService {
     private final OperacionTripulacionRepository operacionTripulacionRepository;
     private final OperacionVueloRepository operacionVueloRepository;
     private final TripulanteRepository tripulanteRepository;
-    private final OperacionTripulacionMapper mapper;
     private final TripulatesOperacionMapper tripulatesOperacionMapper;
 
     public OperacionTripulacionService(
             OperacionTripulacionRepository operacionTripulacionRepository,
             TripulatesOperacionMapper tripulatesOperacionMapper,
             OperacionVueloRepository operacionVueloRepository,
-            OperacionTripulacionMapper mapper,
             TripulanteRepository tripulanteRepository) {
 
         this.operacionTripulacionRepository = operacionTripulacionRepository;
         this.operacionVueloRepository = operacionVueloRepository;
         this.tripulanteRepository = tripulanteRepository;
-        this.mapper = mapper;
         this.tripulatesOperacionMapper = tripulatesOperacionMapper;
     }
 
@@ -49,12 +44,16 @@ public class OperacionTripulacionService {
         Tripulante tripulante = tripulanteRepository.findById(dto.tripulanteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tripulante", "id", dto.tripulanteId()));
 
+        if (operacionTripulacionRepository.existsByOperacionVueloIdAndTripulanteId(dto.operacionId(), dto.tripulanteId())) {
+            throw new DuplicateResourceException("El tripulante ya esta asignado a la operacion.");
+        }
+
         OperacionTripulacion asignacion = new OperacionTripulacion();
         asignacion.setOperacionVuelo(operacion);
         asignacion.setTripulante(tripulante);
         asignacion.setRolEnVuelo(dto.rolEnVuelo());
 
-        return mapper.toDto(operacionTripulacionRepository.save(asignacion));
+        return tripulatesOperacionMapper.toDto(operacionTripulacionRepository.save(asignacion));
     }
 
     @Transactional
@@ -66,13 +65,12 @@ public class OperacionTripulacionService {
     }
 
     @Transactional(readOnly = true)
-    public List<OperacionTripulacionDto> listarTripulatesByOperacionId(Long operacionVuelo) {
-        List<OperacionTripulacion> tripulacions = operacionTripulacionRepository
-                .findByOperacionVueloId(operacionVuelo);
+    public List<OperacionTripulacionDto> obtenerTripulacionPorOperacion(Long operacionId) {
+        operacionVueloRepository.findById(operacionId)
+                .orElseThrow(() -> new ResourceNotFoundException("OperacionVuelo", "id", operacionId));
 
-        List<OperacionTripulacionDto> dtos = tripulacions.stream().map(tripulatesOperacionMapper::toDto)
+        return operacionTripulacionRepository.findByOperacionVueloId(operacionId).stream()
+                .map(tripulatesOperacionMapper::toDto)
                 .collect(Collectors.toList());
-
-        return dtos;
     }
 }

@@ -325,6 +325,18 @@ class ControllersIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    void shouldListTripulacionPorOperacion() throws Exception {
+        TripulanteDto tripulanteDto = new TripulanteDto(3L, "Carlos Perez", "PILOTO");
+        OperacionTripulacionDto asignacion = new OperacionTripulacionDto(1L, 7L, tripulanteDto, "PILOTO");
+        when(operacionTripulacionService.obtenerTripulacionPorOperacion(7L)).thenReturn(List.of(asignacion));
+
+        mockMvc.perform(get("/api/v1/operaciones-tripulacion/operacion/{operacionId}", 7))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].operacionId").value(7));
+    }
+
+    @Test
     @WithMockUser
     void shouldListOperacionesVuelo() throws Exception {
         AeropuertoDto origen = new AeropuertoDto(1L, "SAL", "Monsenor Romero", "San Salvador", "El Salvador");
