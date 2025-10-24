@@ -1,0 +1,15 @@
+spring:
+  security:
+    user:
+      name: admin
+      password: admin123
+  datasource:
+    url: jdbc:mysql://localhost:3306/aerovia_db?createDatabaseIfNotExist=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: create   # o validate si usas Flyway con scripts H2-friendly
+    defer-datasource-initialization: true
+

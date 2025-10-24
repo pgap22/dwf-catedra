@@ -16,5 +16,4 @@ spring:
     hibernate:
       ddl-auto: create-drop   # o validate si usas Flyway con scripts H2-friendly
     defer-datasource-initialization: true
-  flyway:
-    enabled: false            # desactívalo si no tienes scripts compatibles con H2
+
