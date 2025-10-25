@@ -40,6 +40,7 @@ El objetivo principal es **automatizar y optimizar los procesos de registro de v
 * 📊 **Cronograma (Google Sheets):** [Ver aquí](https://docs.google.com/spreadsheets/d/1DU2cbGc1Jj-kCysbKecLZaId2mCdJIwXcz61OSNvcPk/edit?usp=sharing)
 * 🎨 **Prototipos en Figma:** [Ver aquí](https://www.figma.com/design/Ok9P4RLUYmvCm7MZLynUxB/DWF?node-id=0-1906&t=EpFiPYeDBigIEe2w-1)
 * 🗄️ **Modelo ER (Google Drive):** [Ver aquí](https://drive.google.com/file/d/1hrYJrleNusqMvMgfG37ufbN0AEH5yvWA/view?usp=sharing)
+* 🗄️ **Manual (Google Docs):** [Ver aquí](https://docs.google.com/document/d/1rrg5ralsJz3qsX3UCJmP0qyxj9gdmpLbEWoPdteBJQ0/edit?usp=sharing)
 * 📘 **Documento Fase I (PDF):** Incluido en este repositorio
 
 ---
